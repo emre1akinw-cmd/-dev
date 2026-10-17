@@ -1,0 +1,536 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ş Sepeti</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700&display=swap">
+<style>
+:root {
+  /* Düzen: ortalanmış tek sütun. Üstte başlık, ardından durum şeridi, ortasında sepet olan kare tahta, altta düğme. */
+  --bg: #e6f3f1;
+  --board: #f4fbfa;
+  --board-edge: #b8d8d3;
+  --ink: #12363a;
+  --muted: #46686b;
+  --card: #ffffff;
+  --card-edge: #a9cbc6;
+  --accent: #d6336c;
+  --on-accent: #ffffff;
+  --ok: #1f9d55;
+  --ok-ink: #146a3a;
+  --bad: #d64545;
+  --bad-ink: #b02a2a;
+  --focus: #2563eb;
+  --chip: #ffffff;
+  --font-display: 'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e2326;
+    --board: #153136;
+    --board-edge: #2f5b61;
+    --ink: #e3f4f2;
+    --muted: #9bbfbc;
+    --card-edge: #6ea6a1;
+    --accent: #ff6b9a;
+    --on-accent: #3a0a1c;
+    --ok: #3ddc84;
+    --ok-ink: #6df0a5;
+    --bad: #ff7676;
+    --bad-ink: #ff9d9d;
+    --focus: #7aa7ff;
+    --chip: #17383d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e2326;
+  --board: #153136;
+  --board-edge: #2f5b61;
+  --ink: #e3f4f2;
+  --muted: #9bbfbc;
+  --card-edge: #6ea6a1;
+  --accent: #ff6b9a;
+  --on-accent: #3a0a1c;
+  --ok: #3ddc84;
+  --ok-ink: #6df0a5;
+  --bad: #ff7676;
+  --bad-ink: #ff9d9d;
+  --focus: #7aa7ff;
+  --chip: #17383d;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.45;
+  padding-block: 20px 36px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap {
+  max-width: 740px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.letter {
+  flex: none;
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 46px;
+  line-height: 1;
+  padding-bottom: 4px;
+}
+header > div { min-width: 0; }
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(28px, 6vw, 40px);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+header p {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: var(--muted);
+  text-wrap: balance;
+}
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  background: var(--chip);
+  border: 2px solid var(--board-edge);
+  border-radius: 16px;
+  padding: 10px 16px;
+}
+.dots { display: flex; gap: 6px; flex: none; }
+.dot {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1;
+  padding-bottom: 1px;
+  transition: background-color .25s, color .25s;
+}
+.dot.on { background: var(--accent); color: var(--on-accent); }
+#status {
+  flex: 1;
+  min-width: 200px;
+  min-height: 2.9em;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-weight: 700;
+  font-size: 17px;
+}
+#status[data-tone="good"] { color: var(--ok-ink); }
+#status[data-tone="bad"] { color: var(--bad-ink); }
+
+#board {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.board-bg { fill: var(--board); stroke: var(--board-edge); stroke-width: 4; }
+.zone {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 3 15;
+  stroke-linecap: round;
+  opacity: .45;
+  transition: opacity .15s;
+}
+.zone.hot { opacity: 1; stroke-dasharray: none; stroke-width: 6; }
+.basket-in { transform-box: fill-box; transform-origin: 50% 80%; }
+.basket-in.bounce { animation: bounce .45s ease-out; }
+.win .basket-in { animation: wiggle 1.1s ease-in-out 2; }
+@keyframes bounce { 0% { transform: scale(1); } 40% { transform: scale(1.07); } 100% { transform: scale(1); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+.basket-badge { font-family: var(--font-display); font-weight: 800; font-size: 50px; fill: var(--accent); }
+
+.link { fill: none; stroke-width: 11; stroke-linecap: round; opacity: .9; transition: opacity .4s; }
+.link.live { stroke: var(--accent); }
+.link.ok { stroke: var(--ok); opacity: 1; }
+.link.bad { stroke: var(--bad); }
+.link.gone { opacity: 0; }
+
+.card { cursor: grab; outline: none; }
+.card.done { cursor: default; }
+.card-shadow { fill: var(--card-edge); opacity: .55; }
+.card-bg { fill: var(--card); stroke: var(--card-edge); stroke-width: 3; transition: stroke .2s; }
+.card.done .card-bg { stroke: var(--ok); stroke-width: 7; }
+.card:focus-visible .card-bg { stroke: var(--focus); stroke-width: 7; }
+.badge { opacity: 0; transition: opacity .25s; }
+.card.done .badge { opacity: 1; }
+.card.shake { animation: shake .45s ease-in-out; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-9px); }
+  40% { transform: translateX(9px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+.controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+button {
+  font: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 3px solid var(--accent);
+  cursor: pointer;
+}
+#reset { background: var(--accent); color: var(--on-accent); }
+button:focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .basket-in.bounce, .win .basket-in, .card.shake { animation: none; }
+  .link, .dot, .zone, .badge { transition: none; }
+}
+@media (max-width: 480px) {
+  .letter { width: 56px; height: 56px; font-size: 38px; border-radius: 16px; }
+  header p { font-size: 15px; }
+  #status { font-size: 15px; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="letter" aria-hidden="true">Ş</div>
+    <div>
+      <h1>Ş Sepeti</h1>
+    </div>
+  </header>
+
+  <div class="strip">
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <p id="status" role="status" aria-live="polite" data-tone="hint"></p>
+  </div>
+
+  <svg id="board" viewBox="0 0 800 880" role="group" aria-label="Etkinlik tahtası: ortada sepet, çevresinde on resim">
+    <rect class="board-bg" x="2" y="2" width="796" height="876" rx="30"/>
+    <circle class="zone" id="zone" cx="400" cy="450" r="158"/>
+
+    <g transform="translate(400 450)">
+      <g class="basket-in" id="basket">
+        <path d="M-92,-46 C-92,-150 92,-150 92,-46" fill="none" stroke="#8a5a2b" stroke-width="13" stroke-linecap="round"/>
+        <path d="M-112,-40 L112,-40 L90,70 Q88,80 76,80 L-76,80 Q-88,80 -90,70 Z" fill="#cf8e4d"/>
+        <g stroke="#a86a2d" stroke-width="5" stroke-linecap="round" fill="none">
+          <path d="M-106,-12 L106,-12"/><path d="M-100,20 L100,20"/><path d="M-94,52 L94,52"/>
+          <path d="M-70,-38 L-62,76"/><path d="M-35,-38 L-31,78"/><path d="M35,-38 L31,78"/><path d="M70,-38 L62,76"/>
+        </g>
+        <rect x="-120" y="-54" width="240" height="24" rx="12" fill="#a8692a"/>
+        <circle cx="0" cy="26" r="36" fill="#fff6d6" stroke="#8a5a2b" stroke-width="4"/>
+        <text class="basket-badge" x="0" y="44" text-anchor="middle">Ş</text>
+      </g>
+    </g>
+
+    <g id="links"></g>
+    <g id="cards"></g>
+  </svg>
+
+  <div class="controls">
+    <button type="button" id="reset">Baştan başla</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('board');
+  var linksLayer = document.getElementById('links');
+  var cardsLayer = document.getElementById('cards');
+  var statusEl = document.getElementById('status');
+  var dotsEl = document.getElementById('dots');
+  var zone = document.getElementById('zone');
+  var basketEl = document.getElementById('basket');
+  var resetBtn = document.getElementById('reset');
+  var BASKET = { x: 400, y: 450 };
+
+  var ART = {
+    gunes:
+      '<g stroke="#ff9f1c" stroke-width="6" stroke-linecap="round">' +
+      '<line x1="0" y1="-32" x2="0" y2="-45"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(30)"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(60)"/>' +
+      '<line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(90)"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(120)"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(150)"/>' +
+      '<line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(180)"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(210)"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(240)"/>' +
+      '<line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(270)"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(300)"/><line x1="0" y1="-32" x2="0" y2="-45" transform="rotate(330)"/>' +
+      '</g>' +
+      '<circle cx="0" cy="0" r="25" fill="#ffc61a"/>' +
+      '<circle cx="-9" cy="-5" r="2.8" fill="#7c4a03"/><circle cx="9" cy="-5" r="2.8" fill="#7c4a03"/>' +
+      '<path d="M-10,5 Q0,15 10,5" fill="none" stroke="#b45309" stroke-width="3.5" stroke-linecap="round"/>',
+    kus:
+      '<path d="M-10,4 L-50,24 L-44,11 L-52,4 L-42,-4 L-10,-8 Z" fill="#1e5fd1"/>' +
+      '<path d="M-50,34 L50,30" fill="none" stroke="#8b5a2b" stroke-width="6" stroke-linecap="round"/>' +
+      '<ellipse cx="-34" cy="28" rx="10" ry="5" fill="#52b788" transform="rotate(-25 -34 28)"/>' +
+      '<g stroke="#ff8c1a" stroke-width="3.5" stroke-linecap="round"><line x1="2" y1="22" x2="2" y2="30"/><line x1="13" y1="22" x2="13" y2="29"/></g>' +
+      '<path d="M-24,4 C-24,-16 -6,-30 12,-28 C30,-26 34,-8 28,6 C22,20 6,28 -8,24 C-18,22 -24,14 -24,4 Z" fill="#3a86ff"/>' +
+      '<ellipse cx="8" cy="10" rx="16" ry="12" fill="#cfe8ff"/>' +
+      '<circle cx="22" cy="-24" r="15" fill="#3a86ff"/>' +
+      '<path d="M-16,-4 C-4,-16 18,-10 20,6 C12,20 -10,20 -22,10 Z" fill="#1e5fd1"/>' +
+      '<path d="M-12,4 Q2,0 14,4 M-10,10 Q4,8 12,11" fill="none" stroke="#8ec5ff" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<polygon points="35,-27 49,-22 35,-17" fill="#ffb703"/>' +
+      '<circle cx="27" cy="-27" r="4.2" fill="#fff"/><circle cx="28" cy="-27" r="2.2" fill="#12263a"/>' +
+      '<circle cx="30" cy="-18" r="3.2" fill="#ff8fa3" opacity=".7"/>' +
+      '<path d="M16,-37 Q14,-47 22,-44" fill="none" stroke="#3a86ff" stroke-width="4" stroke-linecap="round"/>',
+    dis:
+      '<path d="M-26,-20 C-26,-34 -6,-36 0,-28 C6,-36 26,-34 26,-20 C26,-6 20,6 18,22 C16,38 8,42 6,28 C4,16 -4,16 -6,28 C-8,42 -16,38 -18,22 C-20,6 -26,-6 -26,-20 Z" fill="#f8fafc" stroke="#8fa6c0" stroke-width="3.5" stroke-linejoin="round"/>' +
+      '<path d="M-17,-22 C-17,-27 -10,-28 -7,-24" fill="none" stroke="#cfe0f3" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M32,-44 L35,-36 L43,-33 L35,-30 L32,-22 L29,-30 L21,-33 L29,-36 Z" fill="#ffd23f"/>',
+    ates:
+      '<path d="M0,-46 C8,-30 28,-18 28,6 C28,26 14,40 0,40 C-14,40 -28,26 -28,6 C-28,-6 -22,-14 -16,-22 C-14,-12 -8,-8 -4,-10 C-8,-24 -6,-36 0,-46 Z" fill="#ff5a1f"/>' +
+      '<path d="M2,-12 C8,-2 18,6 18,20 C18,32 10,38 0,38 C-10,38 -18,32 -18,20 C-18,10 -10,2 -2,-6 C0,-8 1,-10 2,-12 Z" fill="#ffb703"/>' +
+      '<ellipse cx="0" cy="26" rx="8" ry="10" fill="#fff3b0"/>',
+    tas:
+      '<ellipse cx="2" cy="32" rx="38" ry="6" fill="#12363a" opacity=".12"/>' +
+      '<path d="M-40,20 C-44,2 -34,-20 -14,-28 C4,-36 30,-30 40,-10 C48,4 46,22 34,28 C14,34 -22,34 -40,20 Z" fill="#9aa5b1" stroke="#6b7785" stroke-width="3.5" stroke-linejoin="round"/>' +
+      '<path d="M-30,4 C-26,-14 -10,-24 6,-26 C20,-26 30,-20 34,-10 C20,-12 6,-6 -4,2 C-14,10 -22,10 -30,4 Z" fill="#c8d0d8"/>' +
+      '<path d="M10,8 L18,18 L12,28" fill="none" stroke="#6b7785" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<ellipse cx="-34" cy="34" rx="8" ry="5" fill="#b8c1cb" stroke="#6b7785" stroke-width="2.5"/>',
+    bas:
+      '<path d="M-42,52 Q-38,36 -10,38 L10,38 Q38,36 42,52 Z" fill="#3a86ff"/>' +
+      '<rect x="-10" y="24" width="20" height="16" rx="4" fill="#e8b88a"/>' +
+      '<circle cx="-27" cy="-4" r="6.5" fill="#f1bf94"/><circle cx="27" cy="-4" r="6.5" fill="#f1bf94"/>' +
+      '<ellipse cx="0" cy="-4" rx="26" ry="32" fill="#f6c9a0"/>' +
+      '<path d="M-29,-8 C-34,-50 34,-50 29,-8 C22,-28 -22,-28 -29,-8 Z" fill="#5b3a1e"/>' +
+      '<circle cx="-9" cy="-4" r="3.2" fill="#12263a"/><circle cx="9" cy="-4" r="3.2" fill="#12263a"/>' +
+      '<path d="M0,0 L-3,9 L2,9" fill="none" stroke="#c98f63" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M-9,17 Q0,25 9,17" fill="none" stroke="#b4503c" stroke-width="3.5" stroke-linecap="round"/>',
+    kas:
+      '<g transform="translate(0 -6)">' +
+      '<rect x="-46" y="-34" width="92" height="82" rx="28" fill="#f9d3b0"/>' +
+      '<path d="M-42,4 C-40,-12 -18,-26 6,-26 C26,-26 38,-14 46,-2 C32,-10 18,-12 4,-10 C-12,-8 -28,-2 -38,10 C-42,12 -44,8 -42,4 Z" fill="#4a2c17"/>' +
+      '<g fill="none" stroke="#7a5230" stroke-width="2.5" stroke-linecap="round" opacity=".85"><path d="M-32,2 L-24,-10"/><path d="M-20,-4 L-10,-16"/><path d="M-6,-8 L2,-20"/><path d="M8,-10 L18,-19"/><path d="M22,-11 L32,-14"/></g>' +
+      '<path d="M-28,28 Q0,8 28,28 Q0,44 -28,28 Z" fill="#fff" stroke="#34495e" stroke-width="3" stroke-linejoin="round"/>' +
+      '<circle cx="0" cy="28" r="10" fill="#8d5524"/><circle cx="0" cy="28" r="4.6" fill="#111"/><circle cx="3.5" cy="24.5" r="2.2" fill="#fff"/>' +
+      '<path d="M-30,28 Q0,6 30,28" fill="none" stroke="#34495e" stroke-width="4" stroke-linecap="round"/>' +
+      '</g>',
+    ucak:
+      '<polygon points="-48,-6 -52,-30 -32,-30 -22,-8" fill="#3a86ff"/>' +
+      '<path d="M-46,-2 Q-46,-10 -34,-10 L28,-10 Q46,-8 49,0 Q46,8 28,10 L-34,10 Q-46,10 -46,-2 Z" fill="#f1f5f9" stroke="#8aa0b8" stroke-width="2.5"/>' +
+      '<polygon points="-4,6 22,6 -2,38 -20,38" fill="#3a86ff"/>' +
+      '<g fill="#38bdf8"><circle cx="-18" cy="-2" r="3"/><circle cx="-6" cy="-2" r="3"/><circle cx="6" cy="-2" r="3"/><circle cx="18" cy="-2" r="3"/></g>' +
+      '<path d="M30,-6 Q40,-6 44,-1 L30,-1 Z" fill="#38bdf8"/>',
+    bilgisayar:
+      '<rect x="-34" y="-38" width="68" height="46" rx="5" fill="#264653"/>' +
+      '<rect x="-29" y="-33" width="58" height="36" rx="2" fill="#8ecae6"/>' +
+      '<path d="M-22,-8 L-10,-20 L0,-10 L8,-18 L22,-6 L22,0 L-22,0 Z" fill="#52b788"/>' +
+      '<circle cx="14" cy="-24" r="5" fill="#ffd23f"/>' +
+      '<path d="M-42,10 L42,10 L50,26 L-50,26 Z" fill="#aab4be"/>' +
+      '<rect x="-14" y="15" width="28" height="4" rx="2" fill="#7b8794"/>',
+    otobus:
+      '<rect x="-46" y="-26" width="92" height="46" rx="9" fill="#ffb703"/>' +
+      '<rect x="-46" y="4" width="92" height="6" fill="#e07a00"/>' +
+      '<g fill="#cdeefd"><rect x="-39" y="-19" width="15" height="17" rx="2"/><rect x="-20" y="-19" width="15" height="17" rx="2"/><rect x="-1" y="-19" width="15" height="17" rx="2"/><rect x="21" y="-19" width="19" height="24" rx="2"/></g>' +
+      '<rect x="42" y="10" width="4" height="6" rx="2" fill="#fff"/>' +
+      '<circle cx="-26" cy="22" r="10" fill="#22223b"/><circle cx="-26" cy="22" r="4.5" fill="#adb5bd"/>' +
+      '<circle cx="24" cy="22" r="10" fill="#22223b"/><circle cx="24" cy="22" r="4.5" fill="#adb5bd"/>'
+  };
+
+  /* Düzen: üstte 3, solda 2, sağda 2, altta 3 kart. Ortada sepet. ok: Ş ile biten. */
+  var CARDS = [
+    { id: 'gunes',      label: 'güneş',      ok: true,  x: 150, y: 120 },
+    { id: 'ucak',       label: 'uçak',       ok: false, x: 400, y: 120 },
+    { id: 'kus',        label: 'kuş',        ok: true,  x: 650, y: 120 },
+    { id: 'dis',        label: 'diş',        ok: true,  x: 110, y: 340 },
+    { id: 'bilgisayar', label: 'bilgisayar', ok: false, x: 110, y: 560 },
+    { id: 'ates',       label: 'ateş',       ok: true,  x: 690, y: 340 },
+    { id: 'otobus',     label: 'otobüs',     ok: false, x: 690, y: 560 },
+    { id: 'tas',        label: 'taş',        ok: true,  x: 150, y: 760 },
+    { id: 'kas',        label: 'kaş',        ok: true,  x: 400, y: 760 },
+    { id: 'bas',        label: 'baş',        ok: true,  x: 650, y: 760 }
+  ];
+  var TOTAL = CARDS.filter(function (c) { return c.ok; }).length;
+  var found = 0;
+  var byId = {};
+  var drag = null;
+
+  function cap(w) { return w.charAt(0).toLocaleUpperCase('tr') + w.slice(1); }
+  function say(text, tone) { statusEl.textContent = text; statusEl.setAttribute('data-tone', tone || 'hint'); }
+  var START_MSG = '';
+
+  /* Kartları ve ilerleme noktalarını kur */
+  for (var i = 0; i < TOTAL; i++) {
+    var d = document.createElement('span');
+    d.className = 'dot';
+    d.textContent = 'Ş';
+    dotsEl.appendChild(d);
+  }
+  CARDS.forEach(function (c) {
+    var g = document.createElementNS(NS, 'g');
+    g.setAttribute('transform', 'translate(' + c.x + ' ' + c.y + ')');
+    g.innerHTML =
+      '<g class="card" tabindex="0" role="button" data-id="' + c.id + '" aria-label="' + c.label + ' resmi. Enter ile sepete ulaştır.">' +
+      '<rect class="card-shadow" x="-80" y="-74" width="160" height="160" rx="24"/>' +
+      '<rect class="card-bg" x="-80" y="-80" width="160" height="160" rx="24"/>' +
+      '<g class="art" transform="scale(1.3)">' + ART[c.id] + '</g>' +
+      '<g class="badge" transform="translate(64 -62)"><circle r="19" fill="var(--ok)"/><path d="M-8,0 L-2,7 L9,-6" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>' +
+      '</g>';
+    cardsLayer.appendChild(g);
+    c.el = g.firstChild;
+    c.done = false;
+    byId[c.id] = c;
+  });
+
+  function updateDots() {
+    var nodes = dotsEl.children;
+    for (var k = 0; k < nodes.length; k++) nodes[k].classList.toggle('on', k < found);
+  }
+
+  /* Koordinat ve çizgi yardımcıları */
+  function toSvg(e) {
+    var p = svg.createSVGPoint();
+    p.x = e.clientX; p.y = e.clientY;
+    var m = svg.getScreenCTM();
+    return m ? p.matrixTransform(m.inverse()) : { x: 0, y: 0 };
+  }
+  function overBasket(p) {
+    var dx = (p.x - BASKET.x) / 135, dy = (p.y - (BASKET.y + 5)) / 110;
+    return dx * dx + dy * dy <= 1;
+  }
+  function snap(c) {
+    var dx = c.x - BASKET.x, dy = c.y - BASKET.y;
+    var dist = Math.hypot(dx, dy) || 1;
+    return { x: BASKET.x + dx / dist * 110, y: BASKET.y + dy / dist * 55 };
+  }
+  function newLine(c) {
+    var l = document.createElementNS(NS, 'line');
+    l.setAttribute('class', 'link live');
+    l.setAttribute('x1', c.x); l.setAttribute('y1', c.y);
+    l.setAttribute('x2', c.x); l.setAttribute('y2', c.y);
+    linksLayer.appendChild(l);
+    return l;
+  }
+  function setEnd(l, p) { l.setAttribute('x2', p.x); l.setAttribute('y2', p.y); }
+  function fadeOut(l, wait) {
+    setTimeout(function () {
+      l.classList.add('gone');
+      setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 450);
+    }, wait);
+  }
+  function bounce() {
+    basketEl.classList.remove('bounce');
+    void basketEl.getBoundingClientRect();
+    basketEl.classList.add('bounce');
+  }
+
+  function resolve(c, line) {
+    setEnd(line, snap(c));
+    if (c.ok) {
+      line.setAttribute('class', 'link ok');
+      c.done = true;
+      c.el.classList.add('done');
+      found++;
+      updateDots();
+      bounce();
+      if (found === TOTAL) {
+        svg.classList.add('win');
+        say('Tebrikler! Ş ile biten ' + TOTAL + ' resmin hepsi sepette.', 'good');
+      } else {
+        say('Doğru! ' + cap(c.label) + ' Ş ile biter.', 'good');
+      }
+    } else {
+      line.setAttribute('class', 'link bad');
+      c.el.classList.remove('shake');
+      void c.el.getBoundingClientRect();
+      c.el.classList.add('shake');
+      say(cap(c.label) + ' Ş ile bitmez. Başka bir resim dene.', 'bad');
+      fadeOut(line, 800);
+    }
+  }
+
+  /* Sürükleyerek çizgi çekme */
+  svg.addEventListener('pointerdown', function (e) {
+    var el = e.target.closest ? e.target.closest('.card') : null;
+    if (!el || drag) return;
+    var c = byId[el.getAttribute('data-id')];
+    if (!c || c.done) return;
+    e.preventDefault();
+    drag = { c: c, line: newLine(c), id: e.pointerId, moved: false };
+    try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  svg.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var p = toSvg(e);
+    setEnd(drag.line, p);
+    zone.classList.toggle('hot', overBasket(p));
+    if (Math.hypot(p.x - drag.c.x, p.y - drag.c.y) > 20) drag.moved = true;
+  });
+  function finish(e, cancelled) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var dr = drag;
+    drag = null;
+    zone.classList.remove('hot');
+    try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
+    var p = toSvg(e);
+    if (!cancelled && dr.moved && overBasket(p)) {
+      resolve(dr.c, dr.line);
+    } else {
+      if (dr.line.parentNode) dr.line.parentNode.removeChild(dr.line);
+      if (!cancelled) {
+        say(START_MSG, 'hint');
+      }
+    }
+  }
+  svg.addEventListener('pointerup', function (e) { finish(e, false); });
+  svg.addEventListener('pointercancel', function (e) { finish(e, true); });
+
+  /* Klavye: Enter veya Boşluk ile resmi sepete ulaştır */
+  cardsLayer.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var el = e.target.closest ? e.target.closest('.card') : null;
+    if (!el) return;
+    e.preventDefault();
+    var c = byId[el.getAttribute('data-id')];
+    if (!c || c.done) return;
+    resolve(c, newLine(c));
+  });
+
+  resetBtn.addEventListener('click', function () {
+    while (linksLayer.firstChild) linksLayer.removeChild(linksLayer.firstChild);
+    CARDS.forEach(function (c) { c.done = false; c.el.classList.remove('done', 'shake'); });
+    found = 0;
+    svg.classList.remove('win');
+    updateDots();
+    say(START_MSG, 'hint');
+  });
+
+  updateDots();
+  say(START_MSG, 'hint');
+})();
+</script>
+
+</body></html>
